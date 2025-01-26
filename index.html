@@ -8,11 +8,57 @@
   <body>
     <h1>Server Sent Events Demo (SSE)</h1>
 
-    <script>
-      const eventSource = new EventSource("/events")
+    <input type="text" id="userIdTxt" placeholder="User ID" />
+    <input type="button" id="connectBtn" value="Connect" />
 
-      eventSource.onmessage = (event) => {
-        console.log(event)
+    <table id="users">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Connection</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      let eventSource = null
+      const userIdInput = document.querySelector("#userIdTxt")
+      const connectButton = document.querySelector("#connectBtn")
+
+      connectButton.addEventListener("click", startConnection)
+
+      function startConnection() {
+        const userId = userIdInput.value.trim()
+        if (!userId) {
+          alert("Please enter a User ID")
+          return
+        }
+
+        eventSource = new EventSource(`/events?user=${userId}`)
+        connectButton.setAttribute("disabled", "")
+        userIdInput.setAttribute("disabled", "")
+
+        eventSource.onmessage = (event) => {
+          const connectedUsers = JSON.parse(event.data)
+
+          const tbody = document.querySelector("#users tbody")
+          tbody.innerHTML = ""
+
+          connectedUsers.forEach((user) => {
+            const tr = document.createElement("tr")
+
+            const tdUser = document.createElement("td")
+            tdUser.textContent = user
+
+            const tdConnection = document.createElement("td")
+            tdConnection.textContent = "Connected"
+
+            tr.appendChild(tdUser)
+            tr.appendChild(tdConnection)
+            tbody.appendChild(tr)
+          })
+        }
       }
     </script>
   </body>

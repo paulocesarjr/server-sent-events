@@ -1,17 +1,20 @@
 import express from "express"
 import fs from "fs"
 import path from "path"
+import Connection from "./connection.js"
 
 const app = express()
 app.use(express.json())
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.writeHead(200, { "content-language": "text/html" })
   const dirname = path.resolve(path.dirname(""))
   const pathIndex = path.join(dirname, "index.html")
   const streamIndexHtml = fs.createReadStream(pathIndex)
   streamIndexHtml.pipe(res)
 })
+
+const connection = new Connection()
 
 app.get("/events", (req, res) => {
   res
@@ -23,17 +26,15 @@ app.get("/events", (req, res) => {
     .write("\n")
 
   const NOTIFICATIONS_INTERVAL = 5000
+  const userId = req.query.user
+  const connectionId = connection.registerUser(userId, res)
 
   setInterval(() => {
-    res.write(`data: ${new Date()}\n\n`)
+    res.write(`data: ${JSON.stringify(connection.connectedUsers)}\n\n`)
   }, NOTIFICATIONS_INTERVAL)
 
-  req.on("close", () => {
-    console.log("Connection was closed")
-  })
+  req.on("close", () => connection.removeUser(userId, connectionId))
 })
 
 const PORT = 3000
-app.listen(PORT, () => {
-  console.log(`Server is running in ${PORT} port`)
-})
+app.listen(PORT, () => console.log(`Server is running on ${PORT} port`))
