@@ -24,13 +24,13 @@ app.get("/events", (req, res) => {
     })
     .write("\n")
 
-  const NOTIFICATIONS_INTERVAL = 5000
+  const EVENTS_INTERVAL = 5000
   const userId = req.query.user
   const connectionId = connection.registerUser(userId, res)
 
   setInterval(() => {
     res.write(`data: ${JSON.stringify(connection.connectedUsers)}\n\n`)
-  }, NOTIFICATIONS_INTERVAL)
+  }, EVENTS_INTERVAL)
 
   req.on("close", () => connection.removeUser(userId, connectionId))
 })
