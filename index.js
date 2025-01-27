@@ -5,12 +5,11 @@ import Connection from "./connection.js"
 
 const app = express()
 app.use(express.json())
+app.use(express.static(path.join(path.resolve(path.dirname("")), "public")))
 
 app.get("/", (_, res) => {
   res.writeHead(200, { "content-language": "text/html" })
-  const dirname = path.resolve(path.dirname(""))
-  const pathIndex = path.join(dirname, "index.html")
-  const streamIndexHtml = fs.createReadStream(pathIndex)
+  const streamIndexHtml = fs.createReadStream("index.html")
   streamIndexHtml.pipe(res)
 })
 
